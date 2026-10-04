@@ -9,12 +9,28 @@ from email.header import Header
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from datetime import datetime, timedelta
+from pathlib import Path
 # ===========================
 # 🔧 使用者設定區
 # ===========================
-EMAIL_SENDER = "pochun.fang@gmail.com"
-EMAIL_PASSWORD = "gecl zapv kywl rpdr"
-EMAIL_RECEIVER = "pochun.fang@gmail.com"
+# 帳密放在同資料夾的 mail.env（已列入 .gitignore，不會進 git）。格式：
+#   EMAIL_SENDER=你的Gmail地址
+#   EMAIL_PASSWORD=16 碼應用程式密碼
+#   EMAIL_RECEIVER=收件地址（選填，預設寄給自己）
+def _load_mail_env():
+    p = Path(__file__).with_name("mail.env")
+    vals = {}
+    if p.exists():
+        for line in p.read_text(encoding="utf-8").splitlines():
+            if "=" in line and not line.lstrip().startswith("#"):
+                k, v = line.split("=", 1)
+                vals[k.strip()] = v.strip()
+    return vals
+
+_MAIL = _load_mail_env()
+EMAIL_SENDER = _MAIL.get("EMAIL_SENDER", "")
+EMAIL_PASSWORD = _MAIL.get("EMAIL_PASSWORD", "").replace(" ", "")
+EMAIL_RECEIVER = _MAIL.get("EMAIL_RECEIVER") or EMAIL_SENDER
 
 # ===========================
 # 1. 抓取 S&P 500
